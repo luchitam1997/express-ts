@@ -39,5 +39,7 @@
     "skipLibCheck": true,
     "esModuleInterop": true,
     "allowSyntheticDefaultImports": true
-  }
+  },
+  "include": ["src/**/*.ts"],
+  "exclude": ["tests", "dist", "node_modules"]
 }

@@ -1,20 +1,18 @@
+import './configs/env'
 import express from 'express'
 import type { Application, Request, Response } from 'express'
 import { initConfigs } from './configs'
-import dotenv from 'dotenv'
 import routes from './routes'
-
-dotenv.config({
-  debug: true,
-  override: true,
-  encoding: 'utf8'
-})
+import cors from 'cors'
 
 const port = 3000
 const app: Application = express()
 
 app.use(express.json({ strict: false }))
 app.use(express.urlencoded({ extended: false }))
+
+// CORS issues
+app.use(cors())
 
 initConfigs()
 

@@ -1,157 +1,219 @@
-# Express TypeScript Product API
+# Express TS Campaign Workspace
 
-A simple REST API built with Express, TypeScript, and MongoDB (Mongoose) for managing products.
+Monorepo with:
 
-## Features
+- backend API for auth and campaign management
+- frontend campaign console UI
 
-- Health check endpoint
-- Create, read, update, and delete products
-- List products with pagination and optional filters
-- MongoDB connection via environment variables
+This README is the top-level guide. Detailed docs are in each app folder:
 
-## Tech Stack
+- Backend guide: backend/README.md
+- Frontend guide: frontend/README.md
 
-- Node.js
-- Express
-- TypeScript
-- Mongoose
-- dotenv
-
-## Project Structure
+## Workspace Structure
 
 ```text
-src/
-  index.ts                 # app entrypoint
-  configs/
-    index.ts               # config initializer
-    mongodb.ts             # MongoDB connection
-  controllers/
-    product.controller.ts  # product handlers
-  models/
-    products.model.ts      # product schema/model
-  routes/
-    index.ts               # base router
-    product.route.ts       # product routes
+express-ts/
+	backend/
+		src/
+		migrations/
+		tests/
+	frontend/
+		src/
 ```
+
+## Tech Overview
+
+Backend:
+
+- Express + TypeScript
+- PostgreSQL via postgres.js
+- JWT auth
+- Zod validation
+
+Frontend:
+
+- React + TypeScript + Vite
+- MUI UI components
+- Redux Toolkit for auth/UI state
+- React Query for server state
+- Axios for API calls
 
 ## Prerequisites
 
 - Node.js 18+
 - npm or yarn
-- A MongoDB instance (local or cloud)
+- PostgreSQL database
 
-## Environment Variables
+## Environment Setup
 
-Create a `.env` file in the project root:
+1. Create backend env file at backend/.env:
 
 ```env
-MONGO_URI=mongodb://localhost:27017
-MONGO_DB=your_database_name
+POSTGRES_URI=postgres://USER:PASSWORD@HOST:5432/DB_NAME
+JWT_SECRET=replace_with_a_secure_secret
 ```
 
-## Installation
+2. Create frontend env file at frontend/.env:
 
-Using npm:
-
-```bash
-npm install
+```env
+VITE_BACKEND_URL=http://localhost:3000
 ```
 
-Using yarn:
+## Install Dependencies
+
+Install each app separately:
 
 ```bash
-yarn install
+cd backend && npm install
+cd ../frontend && npm install
 ```
 
-## Run the App
+## Database Migration
 
-Development mode (with auto-reload):
+From backend/ run:
 
 ```bash
+psql "$POSTGRES_URI" -f migrations/001_initial_schema.sql
+psql "$POSTGRES_URI" -f migrations/002_seed_demo_data.sql
+```
+
+## Run the Project
+
+Use two terminals.
+
+Terminal 1 (backend):
+
+```bash
+cd backend
 npm run dev
 ```
 
-Start mode:
+Terminal 2 (frontend):
 
 ```bash
+cd frontend
+npm run dev
+```
+
+Default local URLs:
+
+- Backend: http://localhost:3000
+- Frontend: http://localhost:5173
+
+## Local Setup Status
+
+Current state:
+
+- Manual local setup is supported and documented above.
+- Docker Compose setup is not available yet in this repository (no compose file exists).
+
+If you want the default entrypoint to be docker compose up, add:
+
+- a docker-compose.yml at repository root
+- Dockerfiles for backend and frontend
+- a PostgreSQL service plus migration step
+
+## Backend API Summary
+
+Public:
+
+- GET /healthcheck
+- POST /auth/register
+- POST /auth/login
+
+Protected (Bearer token required):
+
+- GET /auth/me
+- POST /campaigns
+- GET /campaigns
+- GET /campaigns/:id
+- PATCH /campaigns/:id
+- DELETE /campaigns/:id
+- POST /campaigns/:id/schedule
+- POST /campaigns/:id/send
+- GET /campaigns/:id/stats
+
+## Common Commands
+
+Backend:
+
+```bash
+cd backend
+npm run dev
 npm start
+npm test
 ```
 
-The server runs on:
+Frontend:
 
-```text
-http://localhost:3000
+```bash
+cd frontend
+npm run dev
+npm run build
+npm run preview
+npm run lint
 ```
 
-## API Endpoints
+## Seed Data and Demo Flow
 
-Base path: `/api`
+Current state:
 
-### Health Check
+- Seed script is available at backend/migrations/002_seed_demo_data.sql.
+- Script is idempotent and safe to re-run for local demos.
 
-- `GET /healthcheck`
+Quick demo flow with current backend behavior:
 
-Response:
+1. Login with any valid email using POST /auth/login.
+2. If the user does not exist, backend creates it automatically.
+3. Use returned JWT token to create and manage campaigns.
 
-```json
-{ "status": "ok" }
-```
+Example login request:
 
-### Create Product
-
-- `POST /api/product`
-
-Request body:
-
-```json
-{
-  "name": "Keyboard",
-  "price": 49.99,
-  "description": "Mechanical keyboard"
-}
-```
-
-### Get Product by ID
-
-- `GET /api/product/:id`
-
-### Update Product
-
-- `PUT /api/product/:id`
-
-Request body (any updatable fields):
-
-```json
-{
-  "name": "Keyboard Pro",
-  "price": 79.99,
-  "description": "Updated description"
-}
-```
-
-### Delete Product
-
-- `DELETE /api/product/:id`
-
-### Get All Products
-
-- `GET /api/products`
-
-Optional query params:
-
-- `page` (default: `1`)
-- `limit` (default: `10`)
-- `name` (case-insensitive partial match)
-- `price` (exact number match)
-
-Example:
-
-```http
-GET /api/products?page=1&limit=5&name=key&price=49.99
+```bash
+curl -X POST http://localhost:3000/auth/login \
+	-H "Content-Type: application/json" \
+	-d '{"email":"demo@northstar-mail.com"}'
 ```
 
 ## Notes
 
-- If `MONGO_URI` or `MONGO_DB` is missing, the app will throw an error during startup.
-- JSON request parsing is enabled globally.
-# express-ts
+- Frontend API wrapper is named src/lib/mockApi.ts, but it currently makes real HTTP requests.
+- Backend and frontend README files contain endpoint examples and deeper implementation details.
+
+## How I Used Claude Code
+
+I used Claude Code with GitHub Copilot in VS Code for implementation support.
+
+### What I Used It For
+
+Backend:
+
+- Create CRUD layout
+- Define input validation rules
+- Write unit tests
+- Write SQL queries
+- Draft documentation and comments
+
+Frontend:
+
+- Build UI pages for backend endpoints
+- Style components (buttons, forms, etc.)
+- Mock data flows
+- Draft documentation and comments
+
+### Example Prompts
+
+- Let create the CRUD follow the rules include the input validation (attach the rules)
+- Let write some unit test cases for the campaign rules (attach the rules)
+- Build pages to integrate with these routes (attach backend route TypeScript file)
+
+### What Needed Manual Correction
+
+- Some generated SQL in the campaign controller did not match requirements.
+- Example: it inserted into campaigns and campaign_recipients without inserting missing recipients first.
+
+### What I Did Not Delegate to AI
+
+- Define database schema
+- Configure third-party libraries
