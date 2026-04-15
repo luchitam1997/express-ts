@@ -1,4 +1,4 @@
-# Express TS Campaign Workspace
+# TS Campaign Application Workspace
 
 Monorepo with:
 
